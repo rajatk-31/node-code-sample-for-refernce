@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Solana Transaction</title>
+</head>
+
+<body>
+    <h1>Solana Transaction</h1>
+    <form>
+        <label for="toAddress">Recipient Address:</label><br>
+        <input type="text" id="toAddress" name="toAddress"><br>
+        <label for="amount">Amount:</label><br>
+        <input type="number" id="amount" name="amount"><br>
+        <label for="privateKey">Sender Private Key:</label><br>
+        <textarea id="privateKey" name="privateKey"></textarea><br>
+        <button type="button" onclick="sendTransaction()">Send Transaction</button>
+    </form>
+    <script src="https://solana-web3.js.org/solana-web3.min.js"></script>
+    <script>
+        const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("devnet"));
+
+        async function sendTransaction() {
+            try {
+                // Get input values from the form
+                const toAddress = document.getElementById("toAddress").value;
+                const amount = document.getElementById("amount").value;
+                const privateKey = document.getElementById("privateKey").value;
+
+                // Create a new keypair from the provided private key
+                const fromKeypair = solanaWeb3.Keypair.fromSecretKey(new Uint8Array(Buffer.from(privateKey, "base64")));
+
+                // Create a new transaction instruction to send Solana
+                const transaction = new solanaWeb3.Transaction().add(
+                    solanaWeb3.SystemProgram.transfer({
+                        fromPubkey: fromKeypair.publicKey,
+                        toPubkey: new solanaWeb3.PublicKey(toAddress),
+                        lamports: amount,
+                    })
+                );
+
+                // Sign and send the transaction
+                const signature = await solanaWeb3.sendAndConfirmTransaction(connection, transaction, [fromKeypair]);
+
+                // Output the transaction signature
+                alert("Transaction sent with signature: " + signature);
+            } catch (error) {
+                console.error(error);
+                alert("Transaction failed with error: " + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>
